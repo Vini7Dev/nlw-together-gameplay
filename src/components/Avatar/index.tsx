@@ -14,10 +14,11 @@ const Avatar: React.FC<AvatarProps> = ({ urlImage }) => {
 
     return (
         <LinearGradient
-            colors={[secondary50, secondary70]}
+            style={styles.container}
+                colors={[secondary50, secondary70]}
         >
-            <Image
-                source={{uri: urlImage}}
+            <Image 
+                source={{ uri: urlImage }}
                 style={styles.avatar}
             />
         </LinearGradient>

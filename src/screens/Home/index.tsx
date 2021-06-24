@@ -1,7 +1,9 @@
 import React, { useState, useCallback } from 'react';
 import { View, FlatList } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 
 import styles from './styles';
+import Background from '../../components/Background';
 import Profile from '../../components/Profile';
 import ButtonAdd from '../../components/ButtonAdd';
 import CategorySelect from '../../components/CategorySelect';
@@ -9,7 +11,9 @@ import ListHeader from '../../components/ListHeader';
 import Appointment from '../../components/Appointment';
 import ListDivider from '../../components/ListDivider';
 
+
 const Home: React.FC = () => {
+    const navigation = useNavigation();
     const [categorySelected, setCagtegorySelected] = useState('');
 
     const handleCategorySelected = useCallback((categoryId: string) => {
@@ -17,6 +21,14 @@ const Home: React.FC = () => {
             ? setCagtegorySelected('')
             : setCagtegorySelected(categoryId);
     }, [categorySelected]);
+
+    const handleAppointmentCreate = useCallback(() => {
+        navigation.navigate('AppointmentCreate');
+    }, [navigation]);
+
+    const handleAppointmentDetails = useCallback(() => {
+        navigation.navigate('AppointmentDetails');
+    }, [navigation]);
 
     const appointments = [
         {
@@ -46,10 +58,10 @@ const Home: React.FC = () => {
     ];
 
     return (
-        <View>
+        <Background>
             <View style={styles.header}>
                 <Profile />
-                <ButtonAdd />
+                <ButtonAdd onPress={handleAppointmentCreate} />
             </View>
             
             <CategorySelect
@@ -69,13 +81,14 @@ const Home: React.FC = () => {
                     renderItem={({item}) => (
                        <Appointment
                             data={item}
+                            onPress={handleAppointmentDetails}
                        /> 
                     )}
                     ItemSeparatorComponent={() => <ListDivider />}
                     style={styles.matches}
                 />
             </View>
-        </View>
+        </Background>
     );
 }
 

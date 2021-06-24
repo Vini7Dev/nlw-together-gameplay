@@ -8,7 +8,7 @@ interface GuildIconProps {
     urlImage?: string;
 }
 
-const GuildIcon: React.FC<GuildIconProps> = ({ urlImage = 'https://toppng.com/uploads/preview/discord-logo-png-discord-ico-11562937135cilktsftux.png' }) => {
+const GuildIcon: React.FC<GuildIconProps> = ({ urlImage = 'https://logodownload.org/wp-content/uploads/2017/11/discord-logo-icone.png' }) => {
     return (
         <Image
             source={{ uri: urlImage }}
