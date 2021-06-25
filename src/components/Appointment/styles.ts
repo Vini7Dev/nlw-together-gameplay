@@ -10,6 +10,14 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
     },
+    guildIconContainer: {
+        width: 64,
+        height: 68,
+        borderRadius: 8,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 20,
+    },
     header: {
         width: '100%',
         flexDirection: 'row',

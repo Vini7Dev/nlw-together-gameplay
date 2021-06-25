@@ -34,20 +34,22 @@ const Guilds: React.FC<GuildsProps> = ({
         <View style={styles.container}>
             <FlatList
             style={styles.guilds}
-                data={guilds}
-                keyExtractor={item => item.id}
-                renderItem={({item}) => (
-                    <Guild
-                        key={item.id}
-                        id={item.id}
-                        name={item.name}
-                        icon={item.icon}
-                        owner={item.owner}
-                        onPress={() => handleGuildSelected(item)}
-                    />
-                )}
-                showsVerticalScrollIndicator={false}
-                ItemSeparatorComponent={ListDivider}
+            data={guilds}
+            keyExtractor={item => item.id}
+            renderItem={({item}) => (
+                <Guild
+                    key={item.id}
+                    id={item.id}
+                    name={item.name}
+                    icon={item.icon}
+                    owner={item.owner}
+                    onPress={() => handleGuildSelected(item)}
+                />
+            )}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 69, paddingTop: 103 }}
+            ItemSeparatorComponent={() => <ListDivider isCentered />}
+            ListHeaderComponent={() => <ListDivider isCentered />}
             />
         </View>
     );

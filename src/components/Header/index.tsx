@@ -40,9 +40,9 @@ const Header: React.FC<HeaderProps> = ({ title, action }) => {
             </Text>
 
             {
-                action && <View>
-                    { action }
-                </View>
+                action
+                ? <View>{ action }</View>
+                : <View style={{ width: 24 }} />
             }
         </LinearGradient>
     );

@@ -11,7 +11,6 @@ import ListHeader from '../../components/ListHeader';
 import Appointment from '../../components/Appointment';
 import ListDivider from '../../components/ListDivider';
 
-
 const Home: React.FC = () => {
     const navigation = useNavigation();
     const [categorySelected, setCagtegorySelected] = useState('');
@@ -36,7 +35,7 @@ const Home: React.FC = () => {
             guild: {
                 id: '1',
                 name: 'Lendário',
-                icon: null,
+                icon: undefined,
                 owner: true,
             },
             category: '1',
@@ -48,8 +47,8 @@ const Home: React.FC = () => {
             guild: {
                 id: '1',
                 name: 'Lendário',
-                icon: null,
-                owner: true,
+                icon: undefined,
+                owner: false,
             },
             category: '1',
             date: '22/06 às 20:40',
@@ -69,25 +68,24 @@ const Home: React.FC = () => {
                 setCategorySelected={handleCategorySelected}
             />
 
-            <View style={styles.content}>
-                <ListHeader
-                    title="Partidas agendadas"
-                    subtitle="Total 6"
-                />
+            <ListHeader
+                title="Partidas agendadas"
+                subtitle="Total 6"
+            />
 
-                <FlatList
-                    data={appointments}
-                    keyExtractor={item => item.id}
-                    renderItem={({item}) => (
-                       <Appointment
-                            data={item}
-                            onPress={handleAppointmentDetails}
-                       /> 
-                    )}
-                    ItemSeparatorComponent={() => <ListDivider />}
-                    style={styles.matches}
-                />
-            </View>
+            <FlatList
+                data={appointments}
+                keyExtractor={item => item.id}
+                renderItem={({item}) => (
+                <Appointment
+                        data={item}
+                        onPress={handleAppointmentDetails}
+                /> 
+                )}
+                ItemSeparatorComponent={() => <ListDivider />}
+                contentContainerStyle={{ paddingBottom: 69 }}
+                style={styles.matches}
+            />
         </Background>
     );
 }
