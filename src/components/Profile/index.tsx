@@ -1,18 +1,32 @@
-import React from 'react';
-import { View, Text } from 'react-native';
+import React, { useCallback } from 'react';
+import { View, Text, Alert } from 'react-native';
+import { RectButton } from 'react-native-gesture-handler';
+import { useAuth } from '../../hooks/auth';
 
 import styles from './styles';
 import Avatar from '../Avatar';
-import { useAuth } from '../../hooks/auth';
 
 const Profile: React.FC = () => {
-    const { user } = useAuth();
+    const { user, signOut } = useAuth();
+
+    const handleSignOut = useCallback(async () => {
+        Alert.alert(
+            'Logout',
+            'Deseja sair do GamePlay?',
+            [
+                { text: 'Não', style: 'cancel' },
+                { text: 'Sim', onPress: signOut }
+            ],
+        );
+    }, []);
 
     return (
         <View style={styles.container}>
-            <Avatar
-                urlImage={user.avatar}
-            />
+            <RectButton onPress={handleSignOut}>
+                <Avatar
+                    urlImage={user.avatar}
+                />
+            </RectButton>
 
             <View style={styles.texts}>
                 <View style={styles.user}>

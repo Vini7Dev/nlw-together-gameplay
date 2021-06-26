@@ -1,20 +1,34 @@
 import React from 'react';
-import { LinearGradient } from 'expo-linear-gradient';
-import { Image } from 'react-native';
+import { View, Image } from 'react-native';
 
 import styles from './styles';
+import DiscordSVG from '../../assets/discord.svg';
 
 interface GuildIconProps {
-    urlImage?: string;
+    guildId: string;
+    iconId: string | null;
 }
 
-const GuildIcon: React.FC<GuildIconProps> = ({ urlImage = 'https://logodownload.org/wp-content/uploads/2017/11/discord-logo-icone.png' }) => {
+const { CDN_IMAGE } = process.env;
+
+const GuildIcon: React.FC<GuildIconProps> = ({ guildId, iconId }) => {
+    const uri = `${CDN_IMAGE}/icons/${guildId}/${iconId}.png`;
+
     return (
-        <Image
-            source={{ uri: urlImage }}
-            style={styles.image}
-            resizeMode="cover"
-        />
+        <View style={styles.container}>
+            {
+                iconId
+                ? <Image
+                    source={{ uri }}
+                    style={styles.image}
+                    resizeMode="cover"
+                />
+                : <DiscordSVG
+                    width={40}
+                    height={40}
+                />
+            }
+        </View>
     );
 }
 

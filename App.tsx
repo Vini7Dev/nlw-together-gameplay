@@ -19,6 +19,10 @@ export default function App() {
     Rajdhani_700Bold,
   });
 
+  if(!fontsLoaded) {
+    return (<AppLoading />);
+  }
+
   return (
     <Background>
       <StatusBar
@@ -26,15 +30,9 @@ export default function App() {
         backgroundColor="transparent"
         translucent
       />
-
-      {
-        fontsLoaded 
-          ? (
-            <AuthProvider>
-              <Routes />
-            </AuthProvider>
-          )
-          : <AppLoading /> }
+      <AuthProvider>
+        <Routes />
+      </AuthProvider>
     </Background>
   );
 }

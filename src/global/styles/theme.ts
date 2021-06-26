@@ -17,6 +17,8 @@ const theme = {
     heading: '#DDE3F0',
     line: '#991F36',
     on: '#32BD50',
+
+    discord: '#7289DA',
   },
 
   fonts: {

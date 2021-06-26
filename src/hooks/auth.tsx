@@ -1,13 +1,15 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import * as AuthSession from 'expo-auth-session';
-import {
-    CDN_IMAGE,
-    CLIENT_ID,
-    REDIRECT_URI,
-    RESPONSE_TYPE,
-    SCOPE,
-} from '../configs';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import api from '../services/api';
+import { COLLECTION_USERS } from '../configs/database';
+
+const { CDN_IMAGE } = process.env;
+const { CLIENT_ID } = process.env;
+const { REDIRECT_URI } = process.env;
+const { RESPONSE_TYPE } = process.env;
+const { SCOPE } = process.env;
 
 interface UserProps {
     id: string;
@@ -15,17 +17,20 @@ interface UserProps {
     firstName: string;
     email: string;
     avatar: string;
+    token: string;
 }
 
 interface AuthProviderProps {
     user: UserProps;
     signIn(): Promise<void>;
+    signOut(): Promise<void>
     loading: boolean;
 }
 
 type AuthorizationResponse = AuthSession.AuthSessionResult & {
     params: {
-        access_token: string;
+        access_token?: string;
+        error?: string;
     }
 }
 
@@ -41,6 +46,22 @@ const AuthProvider: React.FC = ({ children }) => {
     const [user, setUser] = useState<UserProps>({} as UserProps);
     const [loading, setLoading] = useState(false);
 
+    useEffect(() => {
+        const loadUserDataFromStorage = async () => {
+            const userAuthenticated = await AsyncStorage.getItem(COLLECTION_USERS);
+
+            if(userAuthenticated) {
+                const userData = JSON.parse(userAuthenticated) as UserProps;
+
+                api.defaults.headers.authorization = `Bearer ${userData.token}`;
+                
+                setUser(userData);
+            }
+        }
+
+        loadUserDataFromStorage();
+    }, []);
+
     const signIn = useCallback(async () => {
         try {
             setLoading(true);
@@ -49,7 +70,7 @@ const AuthProvider: React.FC = ({ children }) => {
 
             const { type, params } = await AuthSession.startAsync({ authUrl }) as AuthorizationResponse;
 
-            if(type === 'success') {
+            if(type === 'success' && !params.error) {
                 api.defaults.headers.authorization = `Bearer ${params.access_token}`;
 
                 const userInfo = await api.get('/users/@me');
@@ -57,22 +78,30 @@ const AuthProvider: React.FC = ({ children }) => {
                 const firstName = userInfo.data.username.split(' ')[0];
                 userInfo.data.avatar = `${CDN_IMAGE}/avatars/${userInfo.data.id}/${userInfo.data.avatar}.png`;
 
-                setUser({
+                const userData = {
                     ...userInfo.data,
                     firstName,
                     token: params.access_token,
-                });
-                setLoading(false);
-            } else {
-                setLoading(false);
+                };
+
+                await AsyncStorage.setItem(COLLECTION_USERS, JSON.stringify(userData));
+
+                setUser(userData);
             }
         } catch(error) {
             throw new Error('Não foi possível autenticar.');
+        } finally {
+            setLoading(false);
         }
     }, []);
 
+    const signOut = useCallback(async () => {
+        setUser({} as UserProps);
+        await AsyncStorage.removeItem(COLLECTION_USERS);
+    }, []);
+
     return (
-        <AuthContext.Provider value={{ user, signIn, loading }}>
+        <AuthContext.Provider value={{ user, loading, signIn, signOut }}>
             {children}
         </AuthContext.Provider>
     );

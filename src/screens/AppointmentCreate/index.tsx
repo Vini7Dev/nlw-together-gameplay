@@ -7,8 +7,12 @@ import {
     KeyboardAvoidingView,
 } from 'react-native';
 import { RectButton } from 'react-native-gesture-handler';
+import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather } from '@expo/vector-icons';
+import uuid from 'react-native-uuid';
 
+import { COLLECTION_APPOINTMENTS } from '../../configs/database';
 import theme from '../../global/styles/theme';
 import styles from './styles';
 
@@ -24,9 +28,16 @@ import Button from '../../components/Button';
 import Background from '../../components/Background';
 
 const AppointmentCreate: React.FC = () => {
-    const [categorySelected, setCategorySelected] = useState('');
+    const navigation = useNavigation();
     const [openGuildsModal, setOpenGuildsModal] = useState(false);
+
+    const [categorySelected, setCategorySelected] = useState('');
     const [guild, setGuild] = useState<GuildProps>({} as GuildProps);
+    const [day, setDay] = useState('');
+    const [month, setMonth] = useState('');
+    const [hour, setHour] = useState('');
+    const [minute, setMinute] = useState('');
+    const [description, setDescription] = useState('');
     
     const handleCategorySelected = useCallback((categoryId: string) => {
         setCategorySelected(categoryId);
@@ -44,6 +55,28 @@ const AppointmentCreate: React.FC = () => {
         setGuild(guildSelected);
         setOpenGuildsModal(false);
     }, []);
+
+    const handleSaveAppointment = useCallback(async () => {
+        const appointment = {
+            id: uuid.v4(),
+            guild,
+            category: categorySelected,
+            date: `${day}/${month} às ${hour}:${minute}h`,
+            description,
+        };
+
+        const appointmentsSaved = await AsyncStorage.getItem(COLLECTION_APPOINTMENTS);
+
+        const appointmentsParsed = appointmentsSaved
+            ? JSON.parse(appointmentsSaved) : [];
+
+        await AsyncStorage.setItem(COLLECTION_APPOINTMENTS, JSON.stringify([
+            ...appointmentsParsed,
+            appointment,
+        ]));
+
+        navigation.navigate('Home');
+    }, [guild, guild, day, month, hour, minute, description, navigation]);
 
     return (
         <KeyboardAvoidingView
@@ -74,7 +107,10 @@ const AppointmentCreate: React.FC = () => {
                             <View style={styles.select}>
                                 {
                                     guild.id
-                                        ? <GuildIcon urlImage={guild.icon} />
+                                        ? <GuildIcon
+                                            guildId={guild.id}
+                                            iconId={guild.icon}
+                                        />
                                         : <View style={styles.image} />
                                 }
 
@@ -106,11 +142,17 @@ const AppointmentCreate: React.FC = () => {
                                 </Text>
                                 
                                 <View style={styles.column}>
-                                    <SmallInput maxLength={2} />
+                                    <SmallInput
+                                        maxLength={2}
+                                        onChangeText={setDay}
+                                    />
                                     <Text style={styles.divider}>
                                         /
                                     </Text>
-                                    <SmallInput maxLength={2} />
+                                    <SmallInput
+                                        maxLength={2}
+                                        onChangeText={setMonth}
+                                    />
                                 </View>
                             </View>
 
@@ -123,11 +165,17 @@ const AppointmentCreate: React.FC = () => {
                                 </Text>
                                 
                                 <View style={styles.column}>
-                                    <SmallInput maxLength={2} />
+                                    <SmallInput
+                                        maxLength={2}
+                                        onChangeText={setHour}
+                                    />
                                     <Text style={styles.divider}>
                                         :
                                     </Text>
-                                    <SmallInput maxLength={2} />
+                                    <SmallInput
+                                        maxLength={2}
+                                        onChangeText={setMinute}
+                                    />
                                 </View>
                             </View>
                         </View>
@@ -147,10 +195,14 @@ const AppointmentCreate: React.FC = () => {
                             maxLength={100}
                             numberOfLines={5}
                             autoCorrect={false}
+                            onChangeText={setDescription}
                         />
 
                         <View style={styles.footer}>
-                            <Button title="Agendar"/> 
+                            <Button
+                                title="Agendar"
+                                onPress={handleSaveAppointment}
+                            /> 
                         </View>
                     </View>
                 </ScrollView>

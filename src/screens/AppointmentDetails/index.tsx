@@ -1,41 +1,88 @@
-import React from 'react';
-import { View, Text, ImageBackground, FlatList } from 'react-native';
+import React, { useState, useEffect, useCallback } from 'react';
+import { View, Text, ImageBackground, FlatList, Alert, Share, Platform } from 'react-native';
+import { useRoute } from '@react-navigation/native';
+import * as Linking from 'expo-linking';
 import { BorderlessButton } from 'react-native-gesture-handler';
 import { Fontisto } from '@expo/vector-icons';
 
+import { AppointmentData } from '../../components/Appointment';
 import styles from './styles';
 import theme from '../../global/styles/theme';
 import BannerIMG from '../../assets/banner.png';
 
+import api from '../../services/api';
+import Loading from '../../components/Loading';
 import Background from '../../components/Background';
 import Header from '../../components/Header';
 import ListHeader from '../../components/ListHeader';
-import Member from '../../components/Member';
+import Member, { MemberProps } from '../../components/Member';
 import ListDivider from '../../components/ListDivider';
 import ButtonIcon from '../../components/ButtonIcon';
 
+interface RouteParams {
+    guildSelected: AppointmentData;
+}
+
+interface GuildWidget {
+    id: string;
+    name: string;
+    instant_invite: string;
+    members: MemberProps[];
+}
+
 const AppointmentDetails: React.FC = () => {
+    const route = useRoute();
+    const { guildSelected } = route.params as RouteParams;
     const { primary } = theme.colors;
 
-    const players = [
-        {
-            id: '1',
-            username: 'Vinícius',
-            avatar_url: 'https://github.com/Vinícius7Dev.png',
-            status: 'online',
-        },
-        {
-            id: '2',
-            username: 'Gabriel',
-            avatar_url: 'https://github.com/Vinícius7Dev.png',
-            status: 'offline',
-        },
-    ];
+    const [loading, setLoading] = useState(true);
+    const [widget, setWidget] = useState<GuildWidget>({} as GuildWidget);
+
+    const handleShareInvitation = useCallback(() => {
+        console.log(widget.instant_invite);
+
+        const message = Platform.OS === 'ios'
+            ? `Junte-se a ${guildSelected.guild.name}`
+            : widget.instant_invite;
+
+            Share.share({
+                message,
+                url: widget.instant_invite,
+            });
+    }, [widget]);
+
+    const handleOpenGuild = useCallback(() => {
+        Linking.openURL(widget.instant_invite);
+    }, [widget]);
+
+    const fetchGuildWidget = useCallback(async () => {
+        try {
+            const response = await api.get(`/guilds/${guildSelected.guild.id}/widget.json`);
+
+            setWidget(response.data);
+        } catch {
+            Alert.alert('Verifique as configurações do servidor. Será que o widget está habilitado?');
+
+            setWidget({
+                id: 'NOT-AVAILABLE',
+                instant_invite: '',
+                members: [],
+                name: 'NOT-AVAILABLE',
+            });
+        } finally {
+            setLoading(false);
+        }
+    }, [guildSelected]);
+
+    useEffect(() => {
+        fetchGuildWidget();
+    }, []);
 
     return (
         <Background>
             <Header title="Detalhes" action={
-                <BorderlessButton>
+                guildSelected.guild.owner &&
+                <BorderlessButton onPress={handleShareInvitation}>
                     <Fontisto
                         name="share"
                         color={primary}
@@ -50,40 +97,49 @@ const AppointmentDetails: React.FC = () => {
             >
                 <View style={styles.bannerContent}>
                     <Text style={styles.title}>
-                        Lendários
+                        {guildSelected.guild.name}
                     </Text>
 
                     <Text style={styles.subtitle}>
-                        Subtítulo...
+                        {guildSelected.description}
                     </Text>
                 </View>
             </ImageBackground>
 
-            <ListHeader
-                title="Jogadores"
-                subtitle="Total 3"
-            />
-
-            <FlatList
-                data={players}
-                keyExtractor={item => item.id}
-                renderItem={({ item }) => (
-                    <Member
-                        id={item.id}
-                        username={item.username}
-                        avatar_url={item.avatar_url}
-                        status={item.status}
+            {
+                loading
+                ? <Loading />
+                : <>
+                    <ListHeader
+                        title="Jogadores"
+                        subtitle={`Total ${widget.members.length}`}
                     />
-                )}
-                ItemSeparatorComponent={ListDivider}
-                style={styles.member}
-            />
 
-            <View style={styles.footer}>
-                <ButtonIcon
-                    title="Entrar na partida"
-                />
-            </View>
+                    <FlatList
+                        data={widget.members}
+                        keyExtractor={item => item.id}
+                        renderItem={({ item }) => (
+                            <Member
+                                id={item.id}
+                                username={item.username}
+                                avatar_url={item.avatar_url}
+                                status={item.status}
+                            />
+                        )}
+                        ItemSeparatorComponent={() => <ListDivider isCentered/>}
+                        style={styles.member}
+                    />
+                </>
+            }
+            {
+                widget.instant_invite &&
+                <View style={styles.footer}>
+                    <ButtonIcon
+                        title="Entrar na partida"
+                        onPress={handleOpenGuild}
+                    />
+                </View>
+            }
         </Background>
     );
 }

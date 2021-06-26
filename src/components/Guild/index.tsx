@@ -14,7 +14,7 @@ import theme from '../../global/styles/theme';
 export interface GuildProps extends TouchableOpacityProps {
     id: string;
     name: string;
-    icon?: string;
+    icon: string | null;
     owner: boolean;
 }
 
@@ -32,7 +32,8 @@ const Guild: React.FC<GuildProps> = ({
             {...rest}
         >
             <GuildIcon
-                urlImage={icon}
+                guildId={id}
+                iconId={icon}
             />
             
             <View style={styles.content}>
